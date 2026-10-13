@@ -1,0 +1,44 @@
+name: Cópia de segurança das TAGs
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # de hora em hora
+  workflow_dispatch:
+
+concurrency:
+  group: tags-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: codigo
+      - name: Pega a branch de cópias (cria se não existir)
+        run: |
+          git clone --quiet "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" copias
+          cd copias
+          if git ls-remote --exit-code --heads origin tags-backup >/dev/null; then
+            git checkout --quiet tags-backup
+          else
+            git checkout --quiet --orphan tags-backup && git rm -rq --cached . 2>/dev/null || true
+            find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          fi
+      - name: Baixa as TAGs do zepone.net
+        run: python codigo/backup_tags.py copias > mudou.txt; cat mudou.txt
+      - name: Grava e atualiza a CDN
+        run: |
+          cd copias
+          git add -A
+          if git diff --cached --quiet; then echo "Nada mudou."; exit 0; fi
+          git -c user.name="ZepOne" -c user.email="zepone@users.noreply.github.com" commit -q -m "Cópia das TAGs $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q origin tags-backup
+          while read -r f; do
+            [ -n "$f" ] && curl -s -o /dev/null "https://purge.jsdelivr.net/gh/${{ github.repository }}@tags-backup/t/$f" || true
+          done < ../mudou.txt
