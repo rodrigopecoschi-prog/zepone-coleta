@@ -1,0 +1,54 @@
+name: Vigia do servidor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # a cada 10 minutos (o GitHub pode atrasar alguns minutos)
+  workflow_dispatch:
+
+concurrency:
+  group: vigia
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  vigia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: codigo
+      - name: Pega a situação anterior (branch vigia)
+        run: |
+          git clone --quiet "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" estado
+          cd estado
+          if git ls-remote --exit-code --heads origin vigia >/dev/null; then
+            git checkout --quiet vigia
+          else
+            git checkout --quiet --orphan vigia && git rm -rq --cached . 2>/dev/null || true
+            find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          fi
+      - name: Confere o zepone.net
+        id: confere
+        continue-on-error: true
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+        run: python codigo/vigia.py estado/estado.json
+      - name: Guarda a situação
+        run: |
+          cd estado
+          git add -A
+          if ! git diff --cached --quiet; then
+            git -c user.name="ZepOne" -c user.email="zepone@users.noreply.github.com" commit -q -m "Vigia $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push -q origin vigia
+          fi
+      - name: Avisa o dono do repositório se caiu
+        if: steps.confere.outcome == 'failure'
+        run: |
+          echo "O zepone.net caiu. Veja o passo 'Confere o zepone.net'."
+          exit 1
