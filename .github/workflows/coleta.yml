@@ -2,8 +2,8 @@ name: Coleta ZepOne
 
 on:
   schedule:
-    # 9h, 11h, 14h, 17h e 19h de Brasília (UTC-3); o GitHub pode atrasar alguns minutos
-    - cron: "0 12,14,17,20,22 * * *"
+    # reserva do servidor zepone.net: 1 vez por dia, às 7h de Brasília (UTC-3); o GitHub pode atrasar alguns minutos
+    - cron: "0 10 * * *"
   workflow_dispatch:
     inputs:
       so:
