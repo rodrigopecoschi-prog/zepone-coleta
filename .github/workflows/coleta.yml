@@ -37,7 +37,7 @@ jobs:
       - name: Coletar e enviar ao Drive
         env:
           GAM_SERVICE_ACCOUNT: ${{ secrets.GAM_SERVICE_ACCOUNT }}
-          GA_SERVICE_ACCOUNT: ${{ secrets.GA_SERVICE_ACCOUNT }}
+          GA_SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT_GA }}
           MEMBRANA_ACCESS_KEY: ${{ secrets.MEMBRANA_ACCESS_KEY }}
           SEEDTAG_API_KEY: ${{ secrets.SEEDTAG_API_KEY }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
