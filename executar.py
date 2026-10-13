@@ -174,7 +174,10 @@ class Coleta:
         except ValueError as e:
             k = self.sa.get("private_key", "")
             raise SystemExit(f"A chave do GAM_SERVICE_ACCOUNT não abre ({e}). Conta: {self.sa.get('client_email')}; "
-                             f"chave com {len(k)} caracteres e {k.count(chr(10))} linhas (o arquivo certo tem cerca de 1700 e 28). "
+                             f"chave com {len(k)} caracteres e {k.count(chr(10))} linhas (o arquivo certo tem cerca de 1700 e 28), "
+                             f"impressão {__import__('hashlib').sha256(k.encode()).hexdigest()[:12]}, "
+                             f"linhas {[len(x) for x in k.split(chr(10))][:4]}...{[len(x) for x in k.split(chr(10))][-4:]}, "
+                             f"caracteres fora do base64: {sorted(set(c for c in k.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '') if not (c.isalnum() or c in '+/=' + chr(10))))}. "
                              "Cole de novo o conteúdo inteiro do service_account.json.")
         d = self.drive
         self.p = {k: d.pasta(k) for k in ("entrada", "saida", "estado")}
