@@ -169,7 +169,13 @@ class Coleta:
         TRAB.mkdir(exist_ok=True)
         LOG.write_text(f"===== inicio {dt.datetime.now(FUSO).strftime('%d/%m/%Y %H:%M')} =====\n", encoding="utf-8")
         self.sa = conta_servico("GAM_SERVICE_ACCOUNT", True)
-        self.drive = Drive(self.sa, segredo("ZEPONE_DRIVE_ID", True))
+        try:
+            self.drive = Drive(self.sa, segredo("ZEPONE_DRIVE_ID", True))
+        except ValueError as e:
+            k = self.sa.get("private_key", "")
+            raise SystemExit(f"A chave do GAM_SERVICE_ACCOUNT não abre ({e}). Conta: {self.sa.get('client_email')}; "
+                             f"chave com {len(k)} caracteres e {k.count(chr(10))} linhas (o arquivo certo tem cerca de 1700 e 28). "
+                             "Cole de novo o conteúdo inteiro do service_account.json.")
         d = self.drive
         self.p = {k: d.pasta(k) for k in ("entrada", "saida", "estado")}
         self.p["zepone"] = d.pasta("zepone", self.p["saida"])
