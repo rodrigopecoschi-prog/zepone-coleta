@@ -108,7 +108,7 @@ class Drive:
 
     def _lista(self, q):
         r = self.s.files().list(q=q, corpora="drive", driveId=self.drive_id, includeItemsFromAllDrives=True,
-                                supportsAllDrives=True, fields="files(id,name,modifiedTime)", pageSize=1000).execute()
+                                supportsAllDrives=True, fields="files(id,name,modifiedTime)", pageSize=1000).execute(num_retries=5)
         return r.get("files", [])
 
     @staticmethod
@@ -121,7 +121,7 @@ class Drive:
         if f:
             return f[0]["id"]
         return self.s.files().create(body={"name": nome, "mimeType": PASTA, "parents": [pai]},
-                                     supportsAllDrives=True, fields="id").execute()["id"]
+                                     supportsAllDrives=True, fields="id").execute(num_retries=5)["id"]
 
     def acha(self, pasta, nome):
         f = self._lista(f"name = '{self._q(nome)}' and '{pasta}' in parents and trashed = false")
@@ -138,18 +138,32 @@ class Drive:
                 _, feito = d.next_chunk()
         return True
 
-    def sobe(self, pasta, caminho, nome=None, tipo="application/json"):
+    def sobe(self, pasta, caminho, nome=None, tipo="application/json", gz=False):
+        """Envia o arquivo (gz=True: compactado em gzip, com .gz no nome) e tenta de novo se a conexão cair."""
         nome = nome or Path(caminho).name
-        midia = MediaFileUpload(str(caminho), mimetype=tipo, resumable=os.path.getsize(caminho) > 5 * 1024 * 1024)
-        f = self.acha(pasta, nome)
-        if f:
-            return self.s.files().update(fileId=f["id"], media_body=midia, supportsAllDrives=True, fields="id").execute()["id"]
-        return self.s.files().create(body={"name": nome, "parents": [pasta]}, media_body=midia,
-                                     supportsAllDrives=True, fields="id").execute()["id"]
+        if gz:
+            import gzip
+            destino = Path(str(caminho) + ".gz")
+            destino.write_bytes(gzip.compress(Path(caminho).read_bytes(), 6))
+            caminho, nome, tipo = destino, nome + ".gz", "application/gzip"
+        for tentativa in range(5):
+            try:
+                midia = MediaFileUpload(str(caminho), mimetype=tipo, resumable=True, chunksize=4 * 1024 * 1024)
+                f = self.acha(pasta, nome)
+                if f:
+                    return self.s.files().update(fileId=f["id"], media_body=midia, supportsAllDrives=True, fields="id").execute(num_retries=5)["id"]
+                return self.s.files().create(body={"name": nome, "parents": [pasta]}, media_body=midia,
+                                             supportsAllDrives=True, fields="id").execute(num_retries=5)["id"]
+            except Exception as e:
+                if tentativa == 4:
+                    raise
+                anota(f"[aviso] envio de {nome} falhou ({e}); tentando de novo...")
+                import time
+                time.sleep(5 * (tentativa + 1))
 
     def apaga(self, file_id):
         try:
-            self.s.files().delete(fileId=file_id, supportsAllDrives=True).execute()
+            self.s.files().delete(fileId=file_id, supportsAllDrives=True).execute(num_retries=5)
         except Exception:
             pass
 
@@ -234,7 +248,7 @@ class Coleta:
         pronto = json.loads((dados / "_pronto.json").read_text(encoding="utf-8"))
         geral, sites = None, {}
         for arq in sorted(dados.glob("zepone_*.json")):
-            fid = d.sobe(self.p["zepone"], arq)
+            fid = d.sobe(self.p["zepone"], arq, gz=True)
             k = arq.stem[len("zepone_"):]
             if k == "_geral":
                 geral = fid
@@ -243,7 +257,7 @@ class Coleta:
         if not geral or not sites:
             raise RuntimeError("A coleta não gerou os arquivos do painel.")
         anota(f"Acompanhamento: {len(sites)} sites enviados ao Drive.")
-        self.publica_manifesto(acompanhamento={"geral": geral, "sites": sites, "gerado": pronto.get("gerado_em"),
+        self.publica_manifesto(acompanhamento={"geral": geral, "sites": sites, "gz": True, "gerado": pronto.get("gerado_em"),
                                                "coletaInicio": inicio, "coletaFim": agora()})
         # Metas: uma vez por dia basta (os números vão até o dia anterior)
         if (self.man.get("metas") or {}).get("dia") == hoje_br():
@@ -255,8 +269,8 @@ class Coleta:
         anota("[4 de 4] Gerando os lançamentos da área Metas...")
         if roda(pasta, ["exportar_metas.py", "painel.html"], 10) and (pasta / "metas_export.json").exists():
             j = json.loads((pasta / "metas_export.json").read_text(encoding="utf-8"))
-            fid = d.sobe(self.p["saida"], pasta / "metas_export.json")
-            self.publica_manifesto(metas={"id": fid, "gerado": j.get("gerado"), "dia": hoje_br(), "n": len(j.get("docs") or [])})
+            fid = d.sobe(self.p["saida"], pasta / "metas_export.json", gz=True)
+            self.publica_manifesto(metas={"id": fid, "gz": True, "gerado": j.get("gerado"), "dia": hoje_br(), "n": len(j.get("docs") or [])})
             anota(f"Metas: {len(j.get('docs') or [])} lançamentos ({j.get('gerado')}).")
         else:
             anota("[ERRO] Não foi possível gerar os lançamentos da área Metas.")
