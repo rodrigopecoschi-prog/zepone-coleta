@@ -1,0 +1,155 @@
+{
+  "_leia_isto_primeiro": "A maioria das colunas abaixo foi CONFIRMADA empiricamente em 08/08/2026 com dados reais da rede 22877339784 (site leodias, via ferramentas/diagnosticar_site.py). EXCECAO: 'impr' foi trocada em 11/08/2026 (ver _impr_nota_2026_08_11) porque as impressoes nao estavam batendo com o relatorio de Ad Exchange -- essa troca AINDA NAO foi validada com dados reais, rode diagnosticar_site.py de novo antes de confiar. Se um dia voce adicionar um site de uma rede diferente e os numeros vierem estranhos de novo, rode ferramentas/diagnosticar_site.py <site_id> pra conferir -- pode ser que outra rede devolva algo um pouco diferente.",
+  "gam_api_version": "v202605",
+  "_gam_api_version_nota": "Versao SOAP suportada em ago/2026. Essa versao e descontinuada a cada poucos meses -- se aparecer erro 'Unrecognized version', confira a atual em https://developers.google.com/ad-manager/api/deprecation e troque aqui.",
+  "service_account_key_file": "service_account.json",
+  "application_name": "Painel Auto GAM - Adzep",
+  "ga_service_account_key_file": "service_account_ga.json",
+  "_ga_service_account_key_file_nota": "ADICIONADO em 17/08/2026 -- credencial SEPARADA da do Ad Manager, so pra API do Google Analytics (GA4 Data API). Precisa: (1) esse arquivo existir nesta pasta com esse nome exato, (2) a biblioteca 'google-analytics-data' instalada (o Atualizar_painel.bat ja instala sozinho), e (3) o e-mail dessa service account (campo 'client_email' dentro do .json) adicionado como Leitor/Viewer em CADA propriedade GA4 que voce quiser automatizar (Admin > Acesso a propriedade, dentro do Google Analytics). Depois disso, preencha a coluna 'ga_property_id' no sites.xlsx pra cada site que voce quiser puxar via API -- sites SEM essa coluna preenchida continuam usando o arquivo manual de 'ga_arquivo', normalmente. Teste com ferramentas/testar_ga_api.py <property_id> ANTES de confiar nos numeros -- ver COMO_USAR_v5.md.",
+  "seedtag_api_key_file": "seedtag_api_key.txt",
+  "_seedtag_api_key_file_nota": "ADICIONADO em 19/08/2026 -- primeiro parceiro de monetizacao automatizado na aba 'Parceiros'. Diferente do Ad Manager/GA4 (que usam um .json de service account), a Seedtag usa um 'api_key' pessoal simples: crie um arquivo de texto (uma linha so, sem aspas) com esse nome exato nesta pasta, contendo o api_key que o time da Seedtag te passar. O codigo troca esse api_key por um accessToken (Bearer) automaticamente a cada execucao -- ver seedtag_lib/auth.py. Preencha a coluna 'seedtag_publisher_id' no sites.xlsx pra cada site que tiver um publisher correspondente na Seedtag (rode ferramentas/testar_seedtag_api.py pra listar os publishers e descobrir o id certo de cada um). Sites sem essa coluna preenchida simplesmente nao mostram card da Seedtag na aba Parceiros -- nao afeta nada mais do painel. Esse arquivo (seedtag_api_key.txt) e uma credencial: nunca deve ir dentro de um zip entregue.",
+  "membrana_access_key_file": "membrana_access_key.txt",
+  "_membrana_access_key_file_nota": "ADICIONADO em 21/08/2026 -- segundo parceiro de monetizacao automatizado na aba 'Parceiros'. Doc oficial (Membrana Publisher API v1.0) fornecida pelo Joao via screenshots apos login em https://pilot.membrana.media (nao acessamos esse portal). Diferente da Seedtag (api_key trocado por accessToken JWT), a Membrana usa um token FIXO direto: crie um arquivo de texto (uma linha so, sem aspas) com esse nome exato nesta pasta, contendo a AccessKey que o Customer Success da Membrana passar. Preencha a coluna 'membrana_site_id' no sites.xlsx pra cada site que tiver um site_id correspondente na Membrana (rode ferramentas/testar_membrana_api.py pra listar os site_id que essa AccessKey ve). IMPORTANTE, diferente da Seedtag: NENHUM endpoint da Membrana aceita filtro por site -- por isso a API e' consultada uma unica vez pra rodada toda (nao por site), e o codigo filtra localmente por site_id (ver fetch_membrana_conta/parse_membrana_site em gerar_dash_v5.py). Esse arquivo (membrana_access_key.txt) e uma credencial: nunca deve ir dentro de um zip entregue.",
+  "_membrana_moeda_nota": "PENDENTE DE CONFIRMACAO (21/08/2026): a doc oficial da Membrana NAO diz em que moeda vem o campo 'revenue' de /monetization/daily, /interstitial/daily e /adwall/daily -- so /billing/report tem um campo 'local_currency' explicito por site. Ate confirmar com a Membrana, o painel ASSUME que a receita provisoria desses 3 endpoints esta na MESMA moeda que /billing/report reporta pra aquele site_id (razoavel, mas nao documentado) -- se o site ainda nao tiver nenhuma linha em /billing/report, o painel mostra a receita SEM tentar converter nem rotular como USD por padrao (evita assumir errado). Pergunte ao time da Membrana qual e' a moeda de 'revenue' nesses 3 endpoints pra fechar essa lacuna.",
+  "_membrana_revenue_vs_billing_nota": "A doc oficial e' explicita: 'revenue' de monetization/interstitial/adwall e' 'before Google deductions... not the final number and should not be used for invoicing' (numero PROVISORIO de performance), enquanto os numeros de /billing/report ('net_billing'/'net_billing_in_local_currency') sao 'final and not subject to change'. O painel NUNCA soma um no lugar do outro -- mostra o provisorio como receita principal do card e o final (quando disponivel) numa nota separada, claramente rotulada.",
+  "parceiros_moeda_exibicao": "USD",
+  "_parceiros_moeda_exibicao_nota": "ADICIONADO em 19/08/2026 -- a Seedtag reporta a receita na moeda da conta (ex.: BRL) e a API dela NAO tem opcao de pedir em outra moeda (testado e confirmado com ferramentas/testar_seedtag_api.py -- diferente do Ad Manager, que tem 'reportCurrency'). Se essa chave estiver preenchida (ex.: 'USD'), o painel busca a cotacao do dia (fx_lib/rates.py, duas fontes gratuitas sem api_key: frankfurter.app e open.er-api.com) e converte a receita de TODOS os parceiros que reportarem em moeda diferente -- se a cotacao falhar (rede fora), o parceiro simplesmente fica na moeda original, sem quebrar nada. Deixe essa chave vazia (\"\") pra voltar a mostrar cada parceiro na moeda original que ele mesmo reporta, sem nenhuma conversao.",
+  "busca_data_inicio": "ano_atual",
+  "_busca_data_inicio_nota": "'ano_atual' = sempre busca de 1o de janeiro do ano corrente até hoje. Pode trocar por uma data fixa 'AAAA-MM-DD' se quiser.",
+  "report_dimensions": [
+    "DATE",
+    "AD_UNIT_NAME",
+    "DEVICE_CATEGORY_NAME"
+  ],
+  "ad_unit_view": "FLAT",
+  "report_dimensions_hora": [
+    "DATE",
+    "HOUR",
+    "DEVICE_CATEGORY_NAME"
+  ],
+  "_report_dimensions_hora_nota": "Relatorio POR HORA: NAO inclui AD_UNIT_NAME de proposito -- o painel so usa o total do site por hora (soma de todos os formatos), entao pedir por formato so deixava o relatorio ~150x mais pesado a toa. Nao mexa a menos que precise de algo por formato por hora.",
+  "report_currency": "USD",
+  "_report_currency_nota": "LIGADO de novo em 11/08/2026, agora com o campo CERTO: 'reportCurrency' (nao 'adxReportCurrency', que era de uma versao antiga da API e nao existe mais -- foi isso que quebrou a primeira tentativa). O nome certo foi CONFIRMADO direto no WSDL real da API (nao chutado): rodamos ferramentas/testar_moeda_api.py, que le o esquema da versao configurada (v202605) sem pedir nenhum relatorio, e ele listou 'reportCurrency' (String) como campo real de ReportQuery. Com isso preenchido, a API converte a receita/metricas monetarias pra essa moeda antes de devolver -- entao todo site aparece em dolar, mesmo os de rede nativa em BRL (tribunadonorte). ANTES de rodar geral: teste com ferramentas/testar_colunas.py <network_code> (ex.: 1007775, tribunadonorte) pra ver um relatorio pequeno (so ontem) e confirmar que aceita e que o valor de receita parece certo -- e compare com um 'Historical report' em USD tirado na propria UI do GAM, pro mesmo dia/rede, pra ver se bate. Se der erro (nao devia mais dar KeyError, mas pode dar um erro de negocio tipo 'moeda nao habilitada pra essa rede'), me avisa com a mensagem exata. Pra voltar pra moeda nativa por rede, so deixar este campo vazio (\"\") de novo.",
+  "painel_timezone": "America/Sao_Paulo",
+  "_painel_timezone_nota": "Fuso do painel. Usado pra saber ate que hora do DIA DE HOJE ja existe entrega (as horas futuras de hoje ficam zeradas). Deixe igual ao fuso da rede no Ad Manager (Admin > Configuracoes globais).",
+  "report_time_zone_type": "PUBLISHER",
+  "_report_time_zone_type_nota": "Fuso em que a API devolve o relatorio POR HORA. 'PUBLISHER' = fuso da rede (America/Sao_Paulo), que e o que queremos. Se a API recusar (algumas contas Ad Exchange so aceitam outro), tente 'PROPOSAL_LOCAL' ou deixe vazio ''. So afeta o relatorio horario.",
+  "hora_janela_dias": 90,
+  "_hora_janela_dias_nota": "Quantos dias (a partir de hoje pra tras) o relatorio POR HORA cobre. So esses dias sao buscados por hora e usados no padrao intradia (qual horario/dia da semana rende mais). A serie principal (Dia/Mes) continua cobrindo o ano inteiro (ver busca_data_inicio). ATENCAO: por hora sao ~24x mais linhas; sites com muitos formatos + janela grande deixam o relatorio pesado/lento. 90 dias e um bom equilibrio pra ver padrao por dia-da-semana. Ponha 0 pra DESLIGAR a busca horaria (o painel funciona so com Dia/Mes).",
+  "report_columns": {
+    "rev": "AD_EXCHANGE_LINE_ITEM_LEVEL_REVENUE",
+    "req": "AD_EXCHANGE_TOTAL_REQUESTS",
+    "impr": "AD_EXCHANGE_LINE_ITEM_LEVEL_IMPRESSIONS",
+    "clk": "AD_EXCHANGE_LINE_ITEM_LEVEL_CLICKS",
+    "match": "AD_EXCHANGE_MATCH_RATE",
+    "va": "AD_EXCHANGE_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS_RATE"
+  },
+  "report_columns_micros": [
+    "rev"
+  ],
+  "_report_columns_micros_nota": "Descoberto no diagnostico de 08/08/2026: a API devolve AD_EXCHANGE_LINE_ITEM_LEVEL_REVENUE em 'micros' (valor real x 1.000.000 -- ex.: '2015440' = US$ 2,01544). O codigo ja divide por 1.000.000 os campos listados aqui antes de usar. req/impr/clk sao contagens (nao precisam disso); match/va sao fracoes 0-1 (o codigo ja multiplica por 100).",
+  "_impr_nota_2026_08_11": "TROCADO de AD_EXCHANGE_RESPONSES_SERVED para AD_EXCHANGE_LINE_ITEM_LEVEL_IMPRESSIONS -- Joao reportou que as impressoes do painel nao batiam com o relatorio de Ad Exchange. Pela doc oficial da API (ReportService.Column), AD_EXCHANGE_RESPONSES_SERVED = 'numero total de vezes que um anuncio do Ad Exchange foi entregue' (mais proximo de resposta/entrega do servidor), enquanto AD_EXCHANGE_LINE_ITEM_LEVEL_IMPRESSIONS = 'numero de impressoes que um anuncio do Ad Exchange entregou para alocacao dinamica em nivel de line item' -- o mesmo conceito de 'nivel de line item' ja usado em rev (AD_EXCHANGE_LINE_ITEM_LEVEL_REVENUE) e clk (AD_EXCHANGE_LINE_ITEM_LEVEL_CLICKS). A antiga 'confirmacao' de que impr batia com req*match era so uma coincidencia matematica (match_rate JA E' definido como matched/requests, entao responses_served ia bater com req*match de qualquer jeito) -- nao provava que o numero era o mesmo 'Impressoes' que aparece no relatorio de Ad Exchange. AINDA NAO VALIDADO com dados reais -- antes de confiar, rode ferramentas/testar_colunas.py <network_code> (confirma se a API aceita essa coluna) e ferramentas/diagnosticar_site.py <site_id>, comparando com o relatorio de Ad Exchange exportado da UI pro mesmo dia/site. Se a API recusar essa coluna (erro tipo COLUMNS_NOT_SUPPORTED_FOR_REQUESTED_DIMENSIONS), volte pra AD_EXCHANGE_RESPONSES_SERVED e me avise.",
+  "_report_columns_confianca": {
+    "req": "alta -- confirmado no enum oficial da API e nos dados reais",
+    "match": "alta -- confirmado no enum oficial (fracao de queries que deram match)",
+    "va": "alta -- confirmado no enum oficial",
+    "impr": "MUDOU em 11/08/2026, AINDA NAO VALIDADO -- ver _impr_nota_2026_08_11. Precisa rodar diagnosticar_site.py e comparar com o relatorio de Ad Exchange da UI antes de confiar.",
+    "rev": "alta -- confirmado nos dados reais, DESDE que dividido por 1.000.000 (ver report_columns_micros)",
+    "clk": "media -- valores pareceram plausiveis (contagens baixas, consistentes com CTR razoavel), mas com menos certeza que os outros"
+  },
+  "max_sites_paralelo": 4,
+  "_max_sites_paralelo_nota": "PADRAO 1 (sequencial, um site de cada vez) -- MODO SEGURO E COMPROVADO. O maior ganho de velocidade ja vem do relatorio por hora enxuto (nao mexa nisso). NAO recomendo aumentar: a biblioteca do Ad Manager compartilha UM MESMO client por rede (network_code) entre sites, e esse client NAO e thread-safe -- com 2+ sites na mesma rede, rodar em paralelo quebra a coleta (foi o que deixou o painel vazio em 24/08). Se algum dia quiser testar paralelo (>1), o coletor tem rede de seguranca: se o paralelo nao trouxer nenhum site, ele refaz sozinho em modo sequencial.",
+  "poll_segundos": 4,
+  "_poll_segundos_nota": "De quantos em quantos segundos o coletor pergunta se o relatorio ficou pronto. Padrao 6 (antes 15). Menor = baixa mais rapido assim que fica pronto.",
+  "sizes_janela_dias": 35,
+  "_sizes_janela_dias_nota": "Bloco 'tamanhos que entregam'. Quantos dias recentes de dado POR DIA por tamanho o coletor guarda (o painel soma conforme o PERIODO que voce escolher na tela -- ontem/7 dias/mes/personalizado). Padrao 35 (cobre 'ultimos 30 dias' e 'este mes'). Aumentar cobre periodos mais longos, mas pesa um pouco mais o arquivo. 0 = desliga o bloco. Total do site (sem quebra por dispositivo).",
+  "report_dimensions_size": [
+    "AD_UNIT_NAME",
+    "CREATIVE_SIZE",
+    "DEVICE_CATEGORY_NAME"
+  ],
+  "sizes_max_por_formato": 20,
+  "_sizes_max_por_formato_nota": "Quantos tamanhos guarda por formato (os de maior receita/impressao). 20 e suficiente; 0 = todos.",
+  "report_columns_deals": {
+    "impr": "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+    "rev": "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+    "clk": "TOTAL_LINE_ITEM_LEVEL_CLICKS",
+    "v": "TOTAL_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS",
+    "me": "TOTAL_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS",
+    "el": "TOTAL_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS"
+  },
+  "report_columns_deals_micros": [
+    "rev"
+  ],
+  "deals_dimensions": [
+    "AD_UNIT_NAME",
+    "LINE_ITEM_NAME",
+    "LINE_ITEM_TYPE"
+  ],
+  "deals_ad_unit_view": "TOP_LEVEL",
+  "deals_janela_dias": 30,
+  "deals_ativo": true,
+  "deals_filtro_nomes": [
+    "criteo",
+    "rtb house"
+  ],
+  "deals_filtro_ativo": true,
+  "deals_filtro_dimensao": "PROPOSAL_NAME",
+  "openbidding_ativo": true,
+  "openbidding_janela_dias": 30,
+  "openbidding_tentativas": [
+    {
+      "dims": [
+        "DATE",
+        "AD_UNIT_NAME",
+        "DEMAND_CHANNEL_NAME",
+        "DEVICE_CATEGORY_NAME"
+      ],
+      "canal": "DEMAND_CHANNEL_NAME",
+      "impr": "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+      "rev": "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+      "micros": true
+    },
+    {
+      "dims": [
+        "DATE",
+        "AD_UNIT_NAME",
+        "DEMAND_CHANNEL_NAME"
+      ],
+      "canal": "DEMAND_CHANNEL_NAME",
+      "impr": "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+      "rev": "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+      "micros": true
+    },
+    {
+      "dims": [
+        "DATE",
+        "AD_UNIT_NAME",
+        "DEMAND_CHANNEL"
+      ],
+      "canal": "DEMAND_CHANNEL",
+      "impr": "TOTAL_LINE_ITEM_LEVEL_IMPRESSIONS",
+      "rev": "TOTAL_LINE_ITEM_LEVEL_CPM_AND_CPC_REVENUE",
+      "micros": true
+    }
+  ],
+  "openbidding_arquivo": "ob",
+  "openbidding_canal_incluir": [
+    "open bidding"
+  ],
+  "sportradar_ativo": true,
+  "_sportradar_nota": "SportRadar (aba Parceiros): veicula pelo GAM, paga por CLIQUE (nao por CPM reportado pelo GAM -- a receita e SEMPRE calculada aqui: cliques x sportradar_valor_por_clique, nunca lida do Ad Manager). Mesmo mecanismo de coleta dos Deals (relatorio por REDE, todos os ad units, agrupado por ad unit TOP-LEVEL = publisher), mas filtrando pelo NOME do item de linha e excluindo Preferred Deal. Reaproveita 'report_columns_deals' (impr/clk/v/me/el) e 'deals_ad_unit_view' -- nao precisa de coluna nova no sites.xlsx, o publisher e identificado automaticamente pelo ad unit pai (mesma tecnica de casamento por nome ja usada nos Deals).",
+  "sportradar_valor_por_clique": 0.25,
+  "_sportradar_valor_por_clique_nota": "Valor fixo em USD pago por clique (combinado com a SportRadar). Receita de cada linha = cliques x este valor. Mude aqui se a taxa combinada mudar -- nao precisa mexer no codigo.",
+  "sportradar_filtro_nomes": [
+    "sportradar"
+  ],
+  "_sportradar_filtro_nomes_nota": "So entram itens de linha cujo NOME contenha um destes termos (comparacao sem acento/maiuscula ja e feita pelo LINE_ITEM_NAME original, comparacao aqui e' case-insensitive por substring). Acrescente variantes aqui (ex.: 'sport radar') se a nomenclatura mudar, sem precisar mexer no codigo.",
+  "sportradar_excluir_tipos": [
+    "preferred_deal",
+    "preferred deal"
+  ],
+  "_sportradar_excluir_tipos_nota": "Itens de linha cujo LINE_ITEM_TYPE contenha um destes termos (case-insensitive) sao EXCLUIDOS -- por pedido do Joao, Preferred Deal fica de fora (e' uma transacao reservada/direta, fora do acordo por clique). Cobre tanto o valor cru do enum da API (PREFERRED_DEAL) quanto uma variante com espaco, por seguranca.",
+  "sportradar_janela_dias": 60,
+  "_sportradar_janela_dias_nota": "Quantos dias recentes (a partir de ontem) o relatorio do SportRadar cobre. NAO usa a janela do ano inteiro (busca_data_inicio) como Seedtag/Membrana porque este relatorio NAO filtra por nome no lado da API (a API do Ad Manager nao suporta LIKE por nome de item de linha em relatorio) -- ele baixa TODOS os itens de linha da rede (de qualquer anunciante) no periodo e filtra aqui depois. Um ano inteiro de todos os itens de linha, por dia, seria um relatorio pesado. 60 dias cobre as opcoes de periodo mais comuns do topo (7 dias/30 dias/mes atual + uma base de comparacao) sem pesar demais -- se voce comparar um periodo mais antigo que isso na aba Parceiros, o card mostra so a parte que cair dentro desses 60 dias (nunca trava, so fica incompleto pra datas mais antigas -- o card avisa isso). Aumente se precisar de mais historico."
+}

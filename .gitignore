@@ -1,0 +1,11 @@
+trabalho/
+__pycache__/
+*.pyc
+service_account*.json
+*_key.txt
+*_api_key.txt
+accounts.yaml
+googleads.yaml
+oauth_*.json
+smtp.json
+sites.xlsx

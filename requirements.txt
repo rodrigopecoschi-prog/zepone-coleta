@@ -1,0 +1,7 @@
+googleads>=48
+google-analytics-data
+google-auth
+google-api-python-client
+openpyxl
+requests
+pyyaml
