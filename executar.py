@@ -72,6 +72,26 @@ def segredo(nome, obrigatorio=False):
     return v
 
 
+def conta_servico(nome, obrigatorio=False):
+    """Lê a service account de um Secret, consertando o que costuma estragar ao colar:
+    aspas tipográficas, espaços nas pontas e a chave com \\n literal ou quebras perdidas."""
+    txt = segredo(nome, obrigatorio)
+    if not txt:
+        return None
+    txt = txt.strip().lstrip("﻿").replace("“", '"').replace("”", '"')
+    try:
+        info = json.loads(txt)
+    except json.JSONDecodeError as e:
+        raise SystemExit(f"O segredo {nome} não é um JSON válido ({e}). Cole de novo o conteúdo inteiro do arquivo .json.")
+    k = info.get("private_key", "").replace("\\n", "\n")
+    cab, rod = "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----"
+    if cab in k and rod in k:   # refaz as linhas de 64 caracteres se elas se perderam
+        miolo = "".join(k.split(cab, 1)[1].split(rod, 1)[0].split())
+        k = cab + "\n" + "\n".join(miolo[i:i + 64] for i in range(0, len(miolo), 64)) + "\n" + rod + "\n"
+    info["private_key"] = k
+    return info
+
+
 class Drive:
     """Arquivos do Drive compartilhado, endereçados por pasta + nome (sobrescreve o que já existe)."""
 
@@ -148,7 +168,7 @@ class Coleta:
     def __init__(self):
         TRAB.mkdir(exist_ok=True)
         LOG.write_text(f"===== inicio {dt.datetime.now(FUSO).strftime('%d/%m/%Y %H:%M')} =====\n", encoding="utf-8")
-        self.sa = json.loads(segredo("GAM_SERVICE_ACCOUNT", True))
+        self.sa = conta_servico("GAM_SERVICE_ACCOUNT", True)
         self.drive = Drive(self.sa, segredo("ZEPONE_DRIVE_ID", True))
         d = self.drive
         self.p = {k: d.pasta(k) for k in ("entrada", "saida", "estado")}
@@ -171,8 +191,8 @@ class Coleta:
 
     def credenciais(self, pasta):
         (pasta / "service_account.json").write_text(json.dumps(self.sa), encoding="utf-8")
-        ga = segredo("GA_SERVICE_ACCOUNT")
-        (pasta / "service_account_ga.json").write_text(ga or json.dumps(self.sa), encoding="utf-8")
+        ga = conta_servico("GA_SERVICE_ACCOUNT")
+        (pasta / "service_account_ga.json").write_text(json.dumps(ga or self.sa), encoding="utf-8")
         for seg, nome in (("MEMBRANA_ACCESS_KEY", "membrana_access_key.txt"), ("SEEDTAG_API_KEY", "seedtag_api_key.txt")):
             if segredo(seg):
                 (pasta / nome).write_text(segredo(seg), encoding="utf-8")
