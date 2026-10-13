@@ -223,8 +223,12 @@ class Coleta:
         ga = conta_servico("GA_SERVICE_ACCOUNT")
         (pasta / "service_account_ga.json").write_text(json.dumps(ga or self.sa), encoding="utf-8")
         for seg, nome in (("MEMBRANA_ACCESS_KEY", "membrana_access_key.txt"), ("SEEDTAG_API_KEY", "seedtag_api_key.txt")):
-            if segredo(seg):
-                (pasta / nome).write_text(segredo(seg), encoding="utf-8")
+            v = segredo(seg)
+            if v.startswith("b64:"):   # formato "blindado" (a colagem não estraga)
+                import base64
+                v = base64.b64decode(v[4:]).decode("utf-8-sig").strip()
+            if v:
+                (pasta / nome).write_text(v, encoding="utf-8")
 
     # ---------- Acompanhamento e Metas ----------
     def acompanhamento(self):
