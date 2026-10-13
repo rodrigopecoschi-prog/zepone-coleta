@@ -79,6 +79,12 @@ def conta_servico(nome, obrigatorio=False):
     if not txt:
         return None
     txt = txt.strip().lstrip("﻿").replace("“", '"').replace("”", '"')
+    if not txt.startswith("{"):   # formato "blindado": o arquivo inteiro em base64, numa linha só
+        import base64
+        try:
+            txt = base64.b64decode("".join(txt.split())).decode("utf-8-sig")
+        except Exception:
+            raise SystemExit(f"O segredo {nome} não é JSON nem base64 válido. Cole de novo o conteúdo que o Claude deixou na área de transferência.")
     try:
         info = json.loads(txt)
     except json.JSONDecodeError as e:
