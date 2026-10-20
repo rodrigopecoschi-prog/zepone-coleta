@@ -1,6 +1,7 @@
 /*! ZepOne Tags | Formato: Slider Vídeo | Site: acusticafm | Publicada em: 14/10/2026 12:13 | TAG: Slider Vídeo — acusticafm */
 ;/* AdZep — tipo de pagina (az_pagetype): home | archive | article
-   Vale para TODOS os formatos. Envia como targeting de pagina no GPT.
+   Vale para TODOS os formatos. Vai em CADA BLOCO da AdZep (slot da rede 22877339784), nunca na pagina:
+   os blocos do site e de outros parceiros nao recebem a chave.
    SO_SLOT=1 (Standalone, pagina do parceiro): nada em nivel de pagina; so guarda o tipo em
    window._azPageType e o formato poe no proprio slot. */
 !function(){
@@ -47,7 +48,16 @@
     window.googletag=window.googletag||{};
     window.googletag.cmd=window.googletag.cmd||[];
     window.googletag.cmd.push(function(){
-      try{window.googletag.pubads().setTargeting(K,v);}catch(e){}
+      try{
+        var g=window.googletag, nosso=function(sl){ try{ return /^\/?22877339784[,\/]/.test(sl.getAdUnitPath()||""); }catch(e){ return false; } };
+        var marca=function(sl){ try{ if(sl&&nosso(sl)&&!(sl.getTargeting(K)||[]).length) sl.setTargeting(K,v); }catch(e){} return sl; };
+        /* blocos ja criados e os que vierem depois (todos os formatos passam por defineSlot / defineOutOfPageSlot) */
+        try{ (g.pubads().getSlots()||[]).forEach(marca); }catch(e){}
+        ["defineSlot","defineOutOfPageSlot"].forEach(function(f){
+          var orig=g[f]; if(typeof orig!=="function"||orig._azPt) return;
+          var novo=function(){ return marca(orig.apply(this,arguments)); }; novo._azPt=1; g[f]=novo;
+        });
+      }catch(e){}
     });
     }
     try{if(/[?&]az_debug/.test(location.search))console.log("%c[AdZep]%c PAGE TYPE%c "+K+"="+v,"color:#622D91;font-weight:bold","background:#622D91;color:#fff;font-weight:bold;padding:2px 6px;border-radius:3px","color:#94a3b8");}catch(e){}
