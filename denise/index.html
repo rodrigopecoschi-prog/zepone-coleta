@@ -3,44 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Denise · Moda feminina</title>
-  <meta name="description" content="Moda feminina com atendimento pelo WhatsApp.">
+  <title>Denise · Moda feminina e infantil</title>
+  <meta name="description" content="Moda feminina e infantil com pedido pelo WhatsApp.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="faixa" id="faixa" hidden></div>
+
   <header class="topo">
     <a href="#" class="marca" id="marca"></a>
-    <nav>
-      <a href="#colecao">Coleção</a>
-      <a href="#sobre">Sobre</a>
-      <a href="#contato">Contato</a>
-    </nav>
+    <nav id="menu"></nav>
+    <button class="botao-sacola" id="abrir-sacola" aria-label="Abrir sacola">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M5 8h14l-1 12H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2"/></svg>
+      <span class="contador" id="contador" hidden>0</span>
+    </button>
   </header>
 
   <section class="hero">
-    <p class="hero-tag">Nova coleção</p>
+    <p class="hero-tag">Feminino · Infantil</p>
     <h1 id="slogan"></h1>
     <p class="hero-texto" id="descricao"></p>
-    <a href="#colecao" class="botao">Ver peças</a>
+    <div class="departamentos" id="departamentos"></div>
   </section>
 
   <main id="colecao" class="colecao">
-    <h2>Coleção</h2>
-    <div class="filtros" id="filtros" role="tablist"></div>
+    <h2 id="titulo-colecao">Coleção</h2>
+    <div class="filtros" id="abas-dep" role="tablist"></div>
+    <div class="filtros filtros-cat" id="filtros"></div>
     <div class="grade" id="grade"></div>
   </main>
 
   <section id="sobre" class="sobre">
-    <h2>Sobre</h2>
-    <p>Cada peça é escolhida pensando em você. Escolha o que gostou, toque em <strong>Pedir pelo WhatsApp</strong> e combinamos tamanho, pagamento e entrega direto com você.</p>
-    <ul class="vantagens">
-      <li><span>01</span>Atendimento pessoal</li>
-      <li><span>02</span>Pix, cartão ou dinheiro</li>
-      <li><span>03</span>Entrega ou retirada</li>
+    <h2>Como comprar</h2>
+    <ul class="passos">
+      <li><span>01</span><strong>Escolha</strong>Peças e tamanhos que você gostou</li>
+      <li><span>02</span><strong>Monte a sacola</strong>Adicione quantas peças quiser</li>
+      <li><span>03</span><strong>Finalize no WhatsApp</strong>Combinamos pagamento e entrega</li>
     </ul>
+    <p class="pagamentos">Pix · Cartão · Dinheiro &nbsp;—&nbsp; Entrega ou retirada</p>
   </section>
 
   <footer id="contato" class="rodape">
@@ -58,9 +61,20 @@
   </a>
 
   <dialog id="detalhe" class="detalhe">
-    <button class="fechar" id="fechar" aria-label="Fechar">×</button>
+    <button class="fechar" data-fechar aria-label="Fechar">×</button>
     <div class="detalhe-corpo" id="detalhe-corpo"></div>
   </dialog>
+
+  <dialog id="sacola" class="sacola">
+    <div class="sacola-topo">
+      <h3>Sua sacola</h3>
+      <button class="fechar" data-fechar aria-label="Fechar">×</button>
+    </div>
+    <div class="sacola-itens" id="sacola-itens"></div>
+    <div class="sacola-rodape" id="sacola-rodape"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
 
   <script src="config.js"></script>
   <script src="app.js"></script>
