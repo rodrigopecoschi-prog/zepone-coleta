@@ -32,15 +32,12 @@ function preencherLoja() {
     $("faixa").hidden = false;
   }
 
-  $("menu").innerHTML = DEPARTAMENTOS
-    .map((d) => `<a href="#colecao" data-dep="${escapar(d.id)}">${escapar(d.nome)}</a>`)
-    .join("") + `<a href="#sobre">Como comprar</a>`;
   $("departamentos").innerHTML = DEPARTAMENTOS
     .map((d) => `
       <a href="#colecao" class="dep-card" data-dep="${escapar(d.id)}" style="--cor:${escapar(d.cor)}">
         <span class="dep-nome">${escapar(d.nome)}</span>
         <span class="dep-chamada">${escapar(d.chamada)}</span>
-        <span class="dep-link">Ver peças →</span>
+        <span class="dep-seta" aria-hidden="true">→</span>
       </a>`)
     .join("");
   document.addEventListener("click", (e) => {
@@ -53,6 +50,8 @@ function preencherLoja() {
 
 let depAtual = "todos";
 let catAtual = "Todas";
+let busca = "";
+const semAcento = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 function escolherDep(dep) {
   depAtual = dep;
@@ -69,14 +68,14 @@ function imagem(p, classe) {
 
 function preco(p) {
   return p.promo
-    ? `<s>${brl(p.preco)}</s> <strong>${brl(p.promo)}</strong>`
-    : `<strong>${brl(p.preco)}</strong>`;
+    ? `<s>${brl(p.preco)}</s><span class="promo">${brl(p.promo)}</span>`
+    : brl(p.preco);
 }
 
 function montarVitrine() {
   const abas = [{ id: "todos", nome: "Tudo" }, ...DEPARTAMENTOS];
   $("abas-dep").innerHTML = abas
-    .map((d) => `<button role="tab" aria-selected="${d.id === depAtual}" data-dep="${escapar(d.id)}">${escapar(d.nome)}</button>`)
+    .map((d) => `<button aria-selected="${d.id === depAtual}" data-dep="${escapar(d.id)}">${escapar(d.nome)}</button>`)
     .join("");
   $("titulo-colecao").textContent = depAtual === "todos" ? "Coleção" : nomeDep(depAtual);
 
@@ -86,16 +85,22 @@ function montarVitrine() {
     .map((c) => `<button aria-pressed="${c === catAtual}" data-cat="${escapar(c)}">${escapar(c)}</button>`)
     .join("");
 
-  const lista = doDep.filter((p) => catAtual === "Todas" || p.categoria === catAtual);
+  const termo = semAcento(busca.trim());
+  const lista = doDep.filter((p) =>
+    (catAtual === "Todas" || p.categoria === catAtual) &&
+    (!termo || semAcento(`${p.nome} ${p.categoria}`).includes(termo)));
+  if (!lista.length) {
+    $("grade").innerHTML = `<p class="vazio">Nenhuma peça encontrada.</p>`;
+    return;
+  }
   $("grade").innerHTML = lista
     .map((p) => `
       <button class="card" data-id="${escapar(p.id)}">
         <div class="card-img">
           ${imagem(p, "foto")}
           ${p.novo ? '<span class="selo">Novo</span>' : ""}
-          ${p.promo ? '<span class="selo selo-promo">Promo</span>' : ""}
+          ${p.promo && !p.novo ? '<span class="selo selo-promo">Promo</span>' : ""}
         </div>
-        <span class="card-cat">${escapar(nomeDep(p.departamento))} · ${escapar(p.categoria)}</span>
         <span class="card-nome">${escapar(p.nome)}</span>
         <span class="card-preco">${preco(p)}</span>
       </button>`)
@@ -104,7 +109,13 @@ function montarVitrine() {
 
 $("abas-dep").onclick = (e) => {
   const b = e.target.closest("button");
-  if (b) escolherDep(b.dataset.dep);
+  if (!b) return;
+  escolherDep(b.dataset.dep);
+  $("colecao").scrollIntoView();
+};
+$("busca").oninput = (e) => {
+  busca = e.target.value;
+  montarVitrine();
 };
 $("filtros").onclick = (e) => {
   const b = e.target.closest("button");
@@ -128,7 +139,7 @@ function abrir(p) {
   det.innerHTML = `
     <div class="detalhe-img">${imagem(p, "foto")}${fotos}</div>
     <div class="detalhe-info">
-      <span class="card-cat">${escapar(nomeDep(p.departamento))} · ${escapar(p.categoria)}</span>
+      <span class="detalhe-cat">${escapar(nomeDep(p.departamento))} · ${escapar(p.categoria)}</span>
       <h3>${escapar(p.nome)}</h3>
       <p class="detalhe-preco">${preco(p)}</p>
       ${p.descricao ? `<p>${escapar(p.descricao)}</p>` : ""}
@@ -137,7 +148,7 @@ function abrir(p) {
         .map((t) => `<button data-t="${escapar(t)}" aria-pressed="${t === tamanho}">${escapar(t)}</button>`)
         .join("")}</div>
       <button class="botao" id="adicionar">Adicionar à sacola</button>
-      <a class="botao botao-contorno" id="pedir" target="_blank" rel="noopener">Pedir só esta pelo WhatsApp</a>
+      <a class="botao botao-contorno" id="pedir" target="_blank" rel="noopener">Pedir só esta no WhatsApp</a>
       <p class="aviso" id="aviso"></p>
     </div>`;
 
@@ -224,16 +235,17 @@ function montarSacola() {
 
   const total = sacola.reduce((s, i) => s + valor(porId(i.id)) * i.qtd, 0);
   const falta = LOJA.freteGratisAcima - total;
+  const progresso = Math.min(100, (total / LOJA.freteGratisAcima) * 100);
   const frete = !LOJA.freteGratisAcima ? ""
-    : falta > 0 ? `Faltam ${brl(falta)} para o frete grátis`
-    : "Você ganhou frete grátis!";
+    : (falta > 0 ? `Faltam <strong>${brl(falta)}</strong> para o frete grátis` : "Frete grátis garantido ✓") +
+      `<div class="barra-frete"><i style="width:${progresso}%"></i></div>`;
   const linhas = sacola.map((i) => {
     const p = porId(i.id);
     return `• ${i.qtd}x ${p.nome} — tam. ${i.tamanho} — ${brl(valor(p) * i.qtd)} (ref ${p.id})`;
   });
   const msg = `Olá, ${LOJA.nome}! Quero fazer este pedido pelo site:\n\n${linhas.join("\n")}\n\n*Total: ${brl(total)}*`;
   $("sacola-rodape").innerHTML = `
-    ${frete ? `<p class="frete">${frete}</p>` : ""}
+    ${frete ? `<div class="frete">${frete}</div>` : ""}
     <p class="total"><span>Total</span><strong>${brl(total)}</strong></p>
     <a class="botao botao-whats" href="${linkWhats(msg)}" target="_blank" rel="noopener">Finalizar pelo WhatsApp</a>`;
 }
