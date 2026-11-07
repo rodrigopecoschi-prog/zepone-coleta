@@ -36,8 +36,8 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
 .marca img, .rodape-marca img { height: 32px; display: block; }
 
 .abas { display: flex; gap: 4px; margin: 0 auto; padding: 3px; background: var(--cinza); border-radius: 999px; }
-.abas button { padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--suave); transition: background .2s, color .2s; }
-.abas button[aria-selected="true"] { background: var(--fundo); color: var(--texto); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.abas a { padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--suave); transition: background .2s, color .2s; }
+.abas a[aria-current="page"] { background: var(--fundo); color: var(--texto); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 
 .botao-sacola { position: relative; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; }
 .botao-sacola:hover { background: var(--cinza); }
@@ -50,7 +50,7 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
 
 @media (max-width: 480px) {
   .topo-linha { gap: 8px; }
-  .abas button { padding: 6px 10px; }
+  .abas a { padding: 6px 10px; }
 }
 
 /* ---------- Hero ---------- */
@@ -68,6 +68,21 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
 .dep-chamada { font-size: 13px; opacity: .7; }
 .dep-seta { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.7); display: grid; place-items: center; font-size: 14px; }
 @media (max-width: 480px) { .dep-chamada { display: none; } }
+
+/* ---------- Página do departamento ---------- */
+.pagina-dep { max-width: var(--largura); margin: 0 auto; padding: 16px 16px 0; }
+.trilha { display: flex; gap: 8px; font-size: 13px; color: var(--suave); margin-bottom: 12px; }
+.trilha a:hover { color: var(--texto); }
+.trilha span:last-child { color: var(--texto); }
+.dep-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  height: clamp(150px, 22vw, 230px); padding: 0 12px 0 clamp(20px, 5vw, 48px);
+  background: var(--cor); border-radius: var(--raio); overflow: hidden;
+}
+.dep-banner h1 { font-size: clamp(28px, 5vw, 44px); }
+.dep-banner p { color: rgba(0, 0, 0, .6); margin-top: 6px; max-width: 36ch; }
+.dep-banner img { height: 84%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; box-shadow: 0 6px 20px rgba(0, 0, 0, .08); }
+.pagina-dep:not([hidden]) + .hero + .colecao { padding-top: 24px; }
 
 /* ---------- Carrossel ---------- */
 .carrossel { position: relative; margin-top: 28px; }

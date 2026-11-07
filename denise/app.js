@@ -34,16 +34,12 @@ function preencherLoja() {
 
   $("departamentos").innerHTML = DEPARTAMENTOS
     .map((d) => `
-      <a href="#colecao" class="dep-card" data-dep="${escapar(d.id)}" style="--cor:${escapar(d.cor)}">
+      <a href="#${escapar(d.id)}" class="dep-card" data-dep="${escapar(d.id)}" style="--cor:${escapar(d.cor)}">
         <span class="dep-nome">${escapar(d.nome)}</span>
         <span class="dep-chamada">${escapar(d.chamada)}</span>
         <span class="dep-seta" aria-hidden="true">→</span>
       </a>`)
     .join("");
-  document.addEventListener("click", (e) => {
-    const a = e.target.closest("a[data-dep]");
-    if (a) escolherDep(a.dataset.dep);
-  });
 }
 
 // ---------- Vitrine ----------
@@ -53,10 +49,31 @@ let catAtual = "Todas";
 let busca = "";
 const semAcento = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-function escolherDep(dep) {
+// Página inicial ("todos") ou página de um departamento
+function mostrarPagina(dep) {
+  const mudou = dep !== depAtual;
   depAtual = dep;
-  catAtual = "Todas";
+  if (mudou) {
+    catAtual = "Todas";
+    busca = "";
+    $("busca").value = "";
+  }
+  const naInicial = dep === "todos";
+  $("hero").hidden = !naInicial;
+  $("pagina-dep").hidden = naInicial;
+  if (!naInicial) {
+    const d = DEPARTAMENTOS.find((x) => x.id === dep);
+    $("dep-trilha").textContent = d.nome;
+    $("dep-titulo").textContent = d.nome;
+    $("dep-chamada").textContent = d.chamada;
+    $("dep-banner").style.setProperty("--cor", d.cor);
+    const vitrine = PRODUTOS.find((p) => p.departamento === dep && p.destaque && p.fotos && p.fotos.length);
+    $("dep-img").hidden = !vitrine;
+    if (vitrine) $("dep-img").src = vitrine.fotos[0];
+  }
+  document.title = naInicial ? `${LOJA.nome} · Moda feminina e infantil` : `${nomeDep(dep)} · ${LOJA.nome}`;
   montarVitrine();
+  if (mudou) window.scrollTo(0, 0);
 }
 
 function imagem(p, classe) {
@@ -87,11 +104,10 @@ function preco(p) {
 }
 
 function montarVitrine() {
-  const abas = [{ id: "todos", nome: "Tudo" }, ...DEPARTAMENTOS];
+  const abas = [{ id: "todos", nome: "Início" }, ...DEPARTAMENTOS];
   $("abas-dep").innerHTML = abas
-    .map((d) => `<button aria-selected="${d.id === depAtual}" data-dep="${escapar(d.id)}">${escapar(d.nome)}</button>`)
+    .map((d) => `<a href="#${d.id === "todos" ? "" : escapar(d.id)}" data-dep="${escapar(d.id)}"${d.id === depAtual ? ' aria-current="page"' : ""}>${escapar(d.nome)}</a>`)
     .join("");
-  $("titulo-colecao").textContent = depAtual === "todos" ? "Coleção" : nomeDep(depAtual);
 
   const doDep = PRODUTOS.filter((p) => depAtual === "todos" || p.departamento === depAtual);
   const cats = ["Todas", ...new Set(doDep.map((p) => p.categoria))];
@@ -103,6 +119,9 @@ function montarVitrine() {
   const lista = doDep.filter((p) =>
     (catAtual === "Todas" || p.categoria === catAtual) &&
     (!termo || semAcento(`${p.nome} ${p.categoria}`).includes(termo)));
+  $("titulo-colecao").textContent = depAtual === "todos"
+    ? "Coleção"
+    : `${lista.length} ${lista.length === 1 ? "peça" : "peças"}`;
   if (!lista.length) {
     $("grade").innerHTML = `<p class="vazio">Nenhuma peça encontrada.</p>`;
     return;
@@ -122,12 +141,6 @@ function montarVitrine() {
     .join("");
 }
 
-$("abas-dep").onclick = (e) => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  escolherDep(b.dataset.dep);
-  $("colecao").scrollIntoView();
-};
 $("busca").oninput = (e) => {
   busca = e.target.value;
   montarVitrine();
@@ -208,17 +221,22 @@ function abrir(p) {
 
 // ---------- Endereço próprio de cada peça (#peca-f01) ----------
 
+// #feminino e #infantil abrem a página do departamento; #peca-id abre a peça
+// por cima da página em que a pessoa está.
 function lerEndereco() {
-  const m = location.hash.match(/^#peca-([\w-]+)$/);
+  const h = location.hash.slice(1);
+  const m = h.match(/^peca-([\w-]+)$/);
   const p = m && porId(m[1]);
-  if (p) abrir(p);
-  else if ($("detalhe").open) $("detalhe").close();
+  if (p) return abrir(p);
+  if ($("detalhe").open) $("detalhe").close();
+  mostrarPagina(DEPARTAMENTOS.some((d) => d.id === h) ? h : "todos");
 }
 window.addEventListener("hashchange", lerEndereco);
 $("detalhe").addEventListener("close", () => {
   if (!location.hash.startsWith("#peca-")) return;
-  try { history.replaceState(null, "", location.pathname + location.search); }
-  catch { location.hash = ""; }
+  const volta = depAtual === "todos" ? location.pathname + location.search : `#${depAtual}`;
+  try { history.replaceState(null, "", volta); }
+  catch { location.hash = depAtual === "todos" ? "" : depAtual; }
 });
 
 // ---------- Carrossel de destaques ----------
@@ -264,7 +282,7 @@ function montarCarrossel() {
   ["mouseleave", "touchend", "focusout"].forEach((ev) => c.addEventListener(ev, () => (pausado = false), { passive: true }));
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
     setInterval(() => {
-      if (!pausado && !document.hidden && !$("detalhe").open) ir(atual() + 1);
+      if (!pausado && !document.hidden && !$("detalhe").open && !$("hero").hidden) ir(atual() + 1);
     }, 5000);
   }
 }
@@ -365,6 +383,6 @@ document.querySelectorAll("dialog").forEach((d) => {
 
 preencherLoja();
 montarCarrossel();
-montarVitrine();
 salvar();
 lerEndereco();
+if ($("grade").innerHTML === "") montarVitrine();
