@@ -20,7 +20,7 @@ const LOJA = {
 
 // Departamentos que aparecem no topo e nos cartões de destaque.
 const DEPARTAMENTOS = [
-  { id: "feminino", nome: "Feminino", chamada: "Vestidos, blusas e calças para o dia a dia", cor: "#f3e3dc" },
+  { id: "feminino", nome: "Feminino", chamada: "Vestidos, blusas, calças e sapatos", cor: "#f3e3dc" },
   { id: "infantil", nome: "Infantil", chamada: "Conforto para brincar, do bebê aos 12 anos", cor: "#e1ecf2" },
 ];
 
@@ -30,7 +30,9 @@ const DEPARTAMENTOS = [
 //   (ex.: ["img/vestido-frente.jpg", "img/vestido-costas.jpg", "img/vestido-lado.jpg"]).
 //   Pode ter só uma, ou mais de três. Sem foto, o site mostra a "cor".
 // Opcionais: promo (preço promocional), novo: true, descricao,
-//   destaque: true (aparece no carrossel da página inicial).
+//   destaque: true (aparece no carrossel da página inicial),
+//   vistas: nomes das fotos, se não forem frente/costas/lado
+//   (ex.: sapatos usam ["Lado", "Frente", "Costas"]).
 const PRODUTOS = [
   // ---------- Feminino ----------
   { id: "f01", departamento: "feminino", nome: "Vestido Midi Floral", categoria: "Vestidos", preco: 189.9, tamanhos: ["P", "M", "G"], cor: "#f3dcd3", fotos: ["img/f01-frente.svg", "img/f01-costas.svg", "img/f01-lado.svg"], novo: true, destaque: true },
@@ -39,6 +41,9 @@ const PRODUTOS = [
   { id: "f04", departamento: "feminino", nome: "Camisa de Seda Off-White", categoria: "Blusas", preco: 159.9, tamanhos: ["P", "M", "G"], cor: "#f2eee8", fotos: ["img/f04-frente.svg", "img/f04-costas.svg", "img/f04-lado.svg"], destaque: true },
   { id: "f05", departamento: "feminino", nome: "Calça Pantalona Alfaiataria", categoria: "Calças", preco: 199.9, tamanhos: ["36", "38", "40", "42", "44"], cor: "#e2dbd3", fotos: ["img/f05-frente.svg", "img/f05-costas.svg", "img/f05-lado.svg"] },
   { id: "f06", departamento: "feminino", nome: "Saia Midi Plissada", categoria: "Saias", preco: 139.9, tamanhos: ["P", "M", "G"], cor: "#eed9dd", fotos: ["img/f06-frente.svg", "img/f06-costas.svg", "img/f06-lado.svg"], promo: 119.9, destaque: true },
+  { id: "f07", departamento: "feminino", nome: "Scarpin Nude Salto Fino", categoria: "Sapatos", preco: 229.9, tamanhos: ["34", "35", "36", "37", "38", "39"], cor: "#f4e6dc", fotos: ["img/f07-lado.svg", "img/f07-frente.svg", "img/f07-costas.svg"], vistas: ["Lado", "Frente", "Costas"], novo: true, destaque: true },
+  { id: "f08", departamento: "feminino", nome: "Sandália Rasteira Caramelo", categoria: "Sapatos", preco: 119.9, tamanhos: ["34", "35", "36", "37", "38", "39"], cor: "#f6ecd9", fotos: ["img/f08-lado.svg", "img/f08-frente.svg", "img/f08-costas.svg"], vistas: ["Lado", "Frente", "Costas"], promo: 99.9 },
+  { id: "f09", departamento: "feminino", nome: "Tênis Casual Branco", categoria: "Sapatos", preco: 199.9, tamanhos: ["34", "35", "36", "37", "38", "39"], cor: "#e9eef0", fotos: ["img/f09-lado.svg", "img/f09-frente.svg", "img/f09-costas.svg"], vistas: ["Lado", "Frente", "Costas"] },
 
   // ---------- Infantil ----------
   { id: "i01", departamento: "infantil", nome: "Body Bebê Algodão", categoria: "Bebê", preco: 49.9, tamanhos: ["RN", "P", "M", "G"], cor: "#fbf1cf", fotos: ["img/i01-frente.svg", "img/i01-costas.svg", "img/i01-lado.svg"], novo: true },

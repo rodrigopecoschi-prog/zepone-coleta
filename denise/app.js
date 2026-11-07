@@ -84,15 +84,15 @@ function imagem(p, classe) {
 }
 
 const VISTAS = ["Frente", "Costas", "Lado"];
-const nomeVista = (i) => VISTAS[i] || `Foto ${i + 1}`;
+const nomeVista = (p, i) => (p.vistas || VISTAS)[i] || `Foto ${i + 1}`;
 
 function galeria(p) {
   if (!p.fotos || !p.fotos.length) return imagem(p, "foto");
   const fotos = p.fotos
-    .map((f, i) => `<img class="foto" src="${escapar(f)}" alt="${escapar(p.nome)} — ${nomeVista(i)}">`)
+    .map((f, i) => `<img class="foto" src="${escapar(f)}" alt="${escapar(p.nome)} — ${escapar(nomeVista(p, i))}">`)
     .join("");
   const botoes = p.fotos.length < 2 ? "" : `<div class="vistas">${p.fotos
-    .map((f, i) => `<button data-i="${i}" aria-pressed="${i === 0}"><img src="${escapar(f)}" alt=""><span>${nomeVista(i)}</span></button>`)
+    .map((f, i) => `<button data-i="${i}" aria-pressed="${i === 0}"><img src="${escapar(f)}" alt=""><span>${escapar(nomeVista(p, i))}</span></button>`)
     .join("")}</div>`;
   return `<div class="galeria">${fotos}</div>${botoes}`;
 }
