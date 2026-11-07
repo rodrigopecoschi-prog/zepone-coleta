@@ -1,4 +1,4 @@
-# Site Denise — moda feminina e infantil, com pedido pelo WhatsApp
+# Site Casa Dê — moda feminina e infantil, com pedido pelo WhatsApp
 
 Site estático (HTML/CSS/JS puro, sem instalação). Abra `index.html` no navegador para ver.
 

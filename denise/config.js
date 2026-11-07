@@ -4,13 +4,13 @@
 // ============================================================
 
 const LOJA = {
-  nome: "Denise",
+  nome: "Casa Dê",
   slogan: "Moda para você e para os pequenos",
   descricao:
     "Roupas femininas e infantis escolhidas a dedo, com conforto e estilo para toda a família. Monte sua sacola e finalize pelo WhatsApp.",
   // Só números, com DDI 55 + DDD. Ex.: "5511999998888"
   whatsapp: "5511999999999",
-  instagram: "denise.moda", // sem o @
+  instagram: "casade.moda", // sem o @ (provisório)
   cidade: "São Paulo · SP",
   // Caminho do logo (ex.: "img/logo.png"). Vazio = usa o nome em texto.
   logo: "",
