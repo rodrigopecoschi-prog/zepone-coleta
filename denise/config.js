@@ -22,6 +22,8 @@ const LOJA = {
 const DEPARTAMENTOS = [
   { id: "feminino", nome: "Feminino", chamada: "Vestidos, blusas, calças e sapatos", cor: "#f3e3dc" },
   { id: "infantil", nome: "Infantil", chamada: "Conforto para brincar, do bebê aos 12 anos", cor: "#e1ecf2" },
+  // separado: true = não se mistura com as peças novas na página inicial
+  { id: "desapego", nome: "Desapego", chamada: "Semi-novos selecionados, feminino e infantil. Peças únicas!", cor: "#ece6f4", separado: true },
 ];
 
 // Cada peça: id único, departamento ("feminino" ou "infantil"), nome,
@@ -31,6 +33,8 @@ const DEPARTAMENTOS = [
 //   Pode ter só uma, ou mais de três. Sem foto, o site mostra a "cor".
 // Opcionais: promo (preço promocional), novo: true, descricao,
 //   destaque: true (aparece no carrossel da página inicial),
+//   estado: "Impecável", "Ótimo estado" ou "Bom estado" (semi-novos; vira peça única),
+//   vendido: true (a peça continua no site marcada como vendida),
 //   vistas: nomes das fotos, se não forem frente/costas/lado
 //   (ex.: sapatos usam ["Lado", "Frente", "Costas"]).
 const PRODUTOS = [
@@ -52,4 +56,12 @@ const PRODUTOS = [
   { id: "i04", departamento: "infantil", nome: "Conjunto Short e Blusa", categoria: "Menina", preco: 79.9, tamanhos: ["2", "4", "6", "8"], cor: "#e2f0de", fotos: ["img/i04-frente.svg", "img/i04-costas.svg", "img/i04-lado.svg"], promo: 64.9 },
   { id: "i05", departamento: "infantil", nome: "Camiseta Estampada Dino", categoria: "Menino", preco: 49.9, tamanhos: ["2", "4", "6", "8", "10", "12"], cor: "#dde9f0", fotos: ["img/i05-frente.svg", "img/i05-costas.svg", "img/i05-lado.svg"] },
   { id: "i06", departamento: "infantil", nome: "Bermuda Sarja", categoria: "Menino", preco: 69.9, tamanhos: ["4", "6", "8", "10", "12"], cor: "#e3e8dc", fotos: ["img/i06-frente.svg", "img/i06-costas.svg", "img/i06-lado.svg"] },
+
+  // ---------- Desapego (semi-novos: cada peça é única) ----------
+  { id: "d01", departamento: "desapego", nome: "Vestido Longo Linho Verde", categoria: "Feminino", preco: 129.9, tamanhos: ["M"], cor: "#e4ece2", fotos: ["img/d01-frente.svg", "img/d01-costas.svg", "img/d01-lado.svg"], estado: "Impecável", descricao: "Usado uma vez, sem nenhuma marca." },
+  { id: "d02", departamento: "desapego", nome: "Camisa Social Azul Clara", categoria: "Feminino", preco: 59.9, tamanhos: ["P"], cor: "#e8eef5", fotos: ["img/d02-frente.svg", "img/d02-costas.svg", "img/d02-lado.svg"], estado: "Ótimo estado" },
+  { id: "d06", departamento: "desapego", nome: "Tênis Casual Verde Água", categoria: "Sapatos", preco: 79.9, tamanhos: ["36"], cor: "#e6efe9", fotos: ["img/d06-lado.svg", "img/d06-frente.svg", "img/d06-costas.svg"], vistas: ["Lado", "Frente", "Costas"], estado: "Bom estado", descricao: "Sola com leve desgaste, mostrado nas fotos." },
+  { id: "d03", departamento: "desapego", nome: "Sandália Infantil Rosa", categoria: "Infantil", preco: 39.9, tamanhos: ["24"], cor: "#fbe6ec", fotos: ["img/d03-lado.svg", "img/d03-frente.svg", "img/d03-costas.svg"], vistas: ["Lado", "Frente", "Costas"], estado: "Ótimo estado" },
+  { id: "d05", departamento: "desapego", nome: "Vestido Infantil Poá Azul", categoria: "Infantil", preco: 44.9, tamanhos: ["6"], cor: "#e1eaf6", fotos: ["img/d05-frente.svg", "img/d05-costas.svg", "img/d05-lado.svg"], estado: "Impecável" },
+  { id: "d04", departamento: "desapego", nome: "Macacão Plush Cinza", categoria: "Infantil", preco: 34.9, tamanhos: ["M"], cor: "#ececef", fotos: ["img/d04-frente.svg", "img/d04-costas.svg", "img/d04-lado.svg"], estado: "Bom estado", vendido: true },
 ];

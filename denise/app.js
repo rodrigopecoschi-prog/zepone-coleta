@@ -4,6 +4,8 @@ const linkWhats = (texto) =>
   `https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(texto)}`;
 const valor = (p) => p.promo || p.preco;
 const porId = (id) => PRODUTOS.find((p) => p.id === id);
+const unica = (p) => Boolean(p.estado);
+const separado = (dep) => Boolean((DEPARTAMENTOS.find((d) => d.id === dep) || {}).separado);
 const nomeDep = (id) => (DEPARTAMENTOS.find((d) => d.id === id) || {}).nome || id;
 
 function escapar(s) {
@@ -67,7 +69,8 @@ function mostrarPagina(dep) {
     $("dep-titulo").textContent = d.nome;
     $("dep-chamada").textContent = d.chamada;
     $("dep-banner").style.setProperty("--cor", d.cor);
-    const vitrine = PRODUTOS.find((p) => p.departamento === dep && p.destaque && p.fotos && p.fotos.length);
+    const doDep = PRODUTOS.filter((p) => p.departamento === dep && !p.vendido && p.fotos && p.fotos.length);
+    const vitrine = doDep.find((p) => p.destaque) || doDep[0];
     $("dep-img").hidden = !vitrine;
     if (vitrine) $("dep-img").src = vitrine.fotos[0];
   }
@@ -109,16 +112,19 @@ function montarVitrine() {
     .map((d) => `<a href="#${d.id === "todos" ? "" : escapar(d.id)}" data-dep="${escapar(d.id)}"${d.id === depAtual ? ' aria-current="page"' : ""}>${escapar(d.nome)}</a>`)
     .join("");
 
-  const doDep = PRODUTOS.filter((p) => depAtual === "todos" || p.departamento === depAtual);
+  const doDep = PRODUTOS.filter((p) =>
+    depAtual === "todos" ? !separado(p.departamento) : p.departamento === depAtual);
   const cats = ["Todas", ...new Set(doDep.map((p) => p.categoria))];
   $("filtros").innerHTML = cats
     .map((c) => `<button aria-pressed="${c === catAtual}" data-cat="${escapar(c)}">${escapar(c)}</button>`)
     .join("");
 
   const termo = semAcento(busca.trim());
-  const lista = doDep.filter((p) =>
-    (catAtual === "Todas" || p.categoria === catAtual) &&
-    (!termo || semAcento(`${p.nome} ${p.categoria}`).includes(termo)));
+  const lista = doDep
+    .filter((p) =>
+      (catAtual === "Todas" || p.categoria === catAtual) &&
+      (!termo || semAcento(`${p.nome} ${p.categoria}`).includes(termo)))
+    .sort((a, b) => Boolean(a.vendido) - Boolean(b.vendido));
   $("titulo-colecao").textContent = depAtual === "todos"
     ? "Coleção"
     : `${lista.length} ${lista.length === 1 ? "peça" : "peças"}`;
@@ -128,12 +134,14 @@ function montarVitrine() {
   }
   $("grade").innerHTML = lista
     .map((p) => `
-      <button class="card" data-id="${escapar(p.id)}">
+      <button class="card${p.vendido ? " card-vendido" : ""}" data-id="${escapar(p.id)}">
         <div class="card-img">
           ${imagem(p, "foto")}
           ${p.fotos && p.fotos[1] ? `<img class="foto foto-2" src="${escapar(p.fotos[1])}" alt="" loading="lazy">` : ""}
+          ${p.estado ? `<span class="selo selo-estado">${escapar(p.estado)}</span>` : ""}
           ${p.novo ? '<span class="selo">Novo</span>' : ""}
           ${p.promo && !p.novo ? '<span class="selo selo-promo">Promo</span>' : ""}
+          ${p.vendido ? '<span class="vendido">Vendido</span>' : ""}
         </div>
         <span class="card-nome">${escapar(p.nome)}</span>
         <span class="card-preco">${preco(p)}</span>
@@ -167,17 +175,22 @@ function abrir(p) {
       <span class="detalhe-cat">${escapar(nomeDep(p.departamento))} · ${escapar(p.categoria)}</span>
       <h3>${escapar(p.nome)}</h3>
       <p class="detalhe-preco">${preco(p)}</p>
+      ${p.estado ? `<p class="estado"><span>${escapar(p.estado)}</span>Semi-novo · peça única</p>` : ""}
       ${p.descricao ? `<p>${escapar(p.descricao)}</p>` : ""}
       <p class="rotulo">Tamanho${p.departamento === "infantil" ? " (idade)" : ""}</p>
       <div class="tamanhos">${p.tamanhos
         .map((t) => `<button data-t="${escapar(t)}" aria-pressed="${t === tamanho}">${escapar(t)}</button>`)
         .join("")}</div>
-      <button class="botao" id="adicionar">Adicionar à sacola</button>
-      <a class="botao botao-contorno" id="pedir" target="_blank" rel="noopener">Pedir só esta no WhatsApp</a>
+      ${p.vendido
+        ? `<p class="esgotada">Esta peça já foi vendida.</p>
+           <a class="botao botao-contorno" href="#${escapar(p.departamento)}">Ver outras peças</a>`
+        : `<button class="botao" id="adicionar">Adicionar à sacola</button>
+           <a class="botao botao-contorno" id="pedir" target="_blank" rel="noopener">Pedir só esta no WhatsApp</a>`}
       <p class="aviso" id="aviso"></p>
     </div>`;
 
   const atualizar = () => {
+    if (p.vendido) return;
     const msg = `Olá! Tenho interesse na peça *${p.nome}* (${brl(valor(p))})` +
       (tamanho ? `, tamanho *${tamanho}*` : "") + `. Ref: ${p.id}`;
     $("pedir").href = linkWhats(msg);
@@ -197,13 +210,18 @@ function abrir(p) {
     $("aviso").textContent = "";
     atualizar();
   };
-  $("pedir").onclick = (e) => { if (!exigirTamanho()) e.preventDefault(); };
-  $("adicionar").onclick = () => {
-    if (!exigirTamanho()) return;
-    adicionar(p.id, tamanho);
-    $("detalhe").close();
-    avisar(`${p.nome} (${tamanho}) foi para a sacola`);
-  };
+  if (!p.vendido) {
+    $("pedir").onclick = (e) => { if (!exigirTamanho()) e.preventDefault(); };
+    $("adicionar").onclick = () => {
+      if (!exigirTamanho()) return;
+      if (!adicionar(p.id, tamanho)) {
+        $("aviso").textContent = "Esta peça única já está na sua sacola.";
+        return;
+      }
+      $("detalhe").close();
+      avisar(`${p.nome} (${tamanho}) foi para a sacola`);
+    };
+  }
   const gal = det.querySelector(".galeria");
   const vistas = det.querySelector(".vistas");
   if (gal && vistas) {
@@ -292,7 +310,7 @@ function montarCarrossel() {
 const CHAVE = "denise-sacola";
 let sacola = [];
 try { sacola = JSON.parse(localStorage.getItem(CHAVE)) || []; } catch { sacola = []; }
-sacola = sacola.filter((i) => porId(i.id));
+sacola = sacola.filter((i) => porId(i.id) && !porId(i.id).vendido);
 
 function salvar() {
   try { localStorage.setItem(CHAVE, JSON.stringify(sacola)); } catch {}
@@ -301,11 +319,14 @@ function salvar() {
   $("contador").hidden = qtd === 0;
 }
 
+// Devolve false quando a peça é única e já está na sacola
 function adicionar(id, tamanho) {
   const item = sacola.find((i) => i.id === id && i.tamanho === tamanho);
+  if (item && unica(porId(id))) return false;
   if (item) item.qtd++;
   else sacola.push({ id, tamanho, qtd: 1 });
   salvar();
+  return true;
 }
 
 function montarSacola() {
@@ -324,9 +345,10 @@ function montarSacola() {
             <strong>${escapar(p.nome)}</strong>
             <span>Tamanho ${escapar(i.tamanho)} · ${brl(valor(p))}</span>
             <div class="qtd">
+              ${unica(p) ? `<em>Peça única · ${escapar(p.estado)}</em>` : `
               <button data-n="${n}" data-acao="-1" aria-label="Diminuir">−</button>
               <span>${i.qtd}</span>
-              <button data-n="${n}" data-acao="1" aria-label="Aumentar">+</button>
+              <button data-n="${n}" data-acao="1" aria-label="Aumentar">+</button>`}
               <button class="remover" data-n="${n}" data-acao="x">Remover</button>
             </div>
           </div>
@@ -342,7 +364,8 @@ function montarSacola() {
       `<div class="barra-frete"><i style="width:${progresso}%"></i></div>`;
   const linhas = sacola.map((i) => {
     const p = porId(i.id);
-    return `• ${i.qtd}x ${p.nome} — tam. ${i.tamanho} — ${brl(valor(p) * i.qtd)} (ref ${p.id})`;
+    const semi = unica(p) ? ` — desapego, ${p.estado.toLowerCase()}` : "";
+    return `• ${i.qtd}x ${p.nome} — tam. ${i.tamanho}${semi} — ${brl(valor(p) * i.qtd)} (ref ${p.id})`;
   });
   const msg = `Olá, ${LOJA.nome}! Quero fazer este pedido pelo site:\n\n${linhas.join("\n")}\n\n*Total: ${brl(total)}*`;
   $("sacola-rodape").innerHTML = `

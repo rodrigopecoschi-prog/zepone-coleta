@@ -48,16 +48,22 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
 }
 .contador[hidden] { display: none; }
 
-@media (max-width: 480px) {
-  .topo-linha { gap: 8px; }
-  .abas a { padding: 6px 10px; }
+@media (max-width: 600px) {
+  .topo-linha { flex-wrap: wrap; height: auto; padding: 8px 16px 10px; row-gap: 6px; justify-content: space-between; }
+  .abas { order: 3; width: 100%; margin: 0; }
+  .abas a { flex: 1; text-align: center; padding: 6px 4px; }
+  html { scroll-padding-top: 112px; }
 }
 
 /* ---------- Hero ---------- */
 .hero { max-width: var(--largura); margin: 0 auto; padding: 40px 16px 8px; }
 .hero h1 { font-size: clamp(28px, 5vw, 44px); max-width: 16ch; }
 .hero p { color: var(--suave); margin-top: 10px; max-width: 46ch; }
-.departamentos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
+.departamentos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+@media (max-width: 600px) {
+  .departamentos { grid-template-columns: 1fr 1fr; }
+  .dep-card:last-child:nth-child(odd) { grid-column: 1 / -1; min-height: 96px; }
+}
 .dep-card {
   position: relative; display: flex; flex-direction: column; justify-content: flex-end;
   min-height: clamp(130px, 22vw, 220px); padding: 18px; border-radius: var(--raio);
@@ -160,6 +166,13 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
   background: rgba(255,255,255,.9); font-size: 11px; font-weight: 500;
 }
 .selo-promo { color: var(--promo); }
+.selo-estado { background: #6d5a8a; color: #fff; }
+.selo-estado + .selo { left: auto; right: 10px; }
+.vendido {
+  position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255, 255, 255, .55);
+  font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+}
+.card-vendido .card-nome, .card-vendido .card-preco { color: var(--suave); }
 .card-nome { font-size: 14px; }
 .card-preco { font-size: 14px; font-weight: 600; margin-top: 2px; }
 .card-preco s, .detalhe-preco s { color: var(--suave); font-weight: 400; margin-right: 6px; }
@@ -234,6 +247,10 @@ dialog::backdrop { background: rgba(0, 0, 0, .35); backdrop-filter: blur(2px); }
 .tamanhos button:hover { border-color: var(--texto); }
 .tamanhos button[aria-pressed="true"] { background: var(--texto); border-color: var(--texto); color: #fff; }
 .aviso { color: var(--promo); font-size: 13px; min-height: 1.4em; }
+.estado { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--suave); }
+.estado span { padding: 3px 10px; border-radius: 999px; background: #6d5a8a; color: #fff; font-size: 12px; font-weight: 500; }
+.esgotada { padding: 12px 14px; border-radius: 10px; background: var(--cinza); color: var(--suave); font-size: 14px; }
+.qtd em { font-style: normal; font-size: 12px; color: #6d5a8a; }
 
 /* No celular o detalhe vira uma "gaveta" que sobe de baixo */
 @media (max-width: 680px) {

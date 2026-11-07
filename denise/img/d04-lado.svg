@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="900" height="1200">
+<defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity=".12"/></filter></defs>
+<rect width="300" height="400" fill="#ececef"/>
+<g filter="url(#s)" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(150 0) scale(.48 1) translate(-150 0)"><circle cx="118" cy="66" r="16" fill="#b9b9bf" stroke="#8d8d94" stroke-width="2"/><circle cx="182" cy="66" r="16" fill="#b9b9bf" stroke="#8d8d94" stroke-width="2"/><circle cx="118" cy="66" r="7" fill="#e2e2e6"/><circle cx="182" cy="66" r="7" fill="#e2e2e6"/><path d="M106,140 L72,170 L84,226 L108,212 Z M194,140 L228,170 L216,226 L192,212 Z" fill="#b9b9bf" stroke="#8d8d94" stroke-width="2"/><path d="M108,130 L192,130 L194,270 L192,344 Q172,352 154,344 L152,282 L148,282 L146,344 Q128,352 108,344 L106,270 Z" fill="#b9b9bf" stroke="#8d8d94" stroke-width="2"/><circle cx="150" cy="98" r="40" fill="#b9b9bf" stroke="#8d8d94" stroke-width="2"/></g></g>
+</svg>
