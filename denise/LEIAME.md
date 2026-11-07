@@ -12,7 +12,12 @@ Tudo fica em **`config.js`**:
   `fotos` (ex.: `["img/vestido-floral-1.jpg", "img/vestido-floral-2.jpg"]`),
   e opcionalmente `promo` (preço promocional), `novo: true` e `descricao`.
 
-As fotos vão na pasta `img/`. Proporção ideal: retrato 3:4 (ex.: 900×1200).
+As fotos vão na pasta `img/`, na ordem **frente, costas, lado**. Proporção ideal: retrato 3:4
+(ex.: 900×1200). As ilustrações `img/*-frente.svg`, `-costas.svg` e `-lado.svg` são só simulações
+para visualizar o site; troque pelas fotos reais.
+
+Peças com `destaque: true` aparecem no **carrossel** da página inicial. Cada peça tem um link
+próprio para mandar para clientes: `endereço-do-site/#peca-f01` (troque `f01` pelo `id` da peça).
 As categorias dos filtros são criadas automaticamente a partir das peças.
 
 ## Como funciona o pedido

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="900" height="1200">
-<defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity=".12"/></filter></defs>
-<rect width="300" height="400" fill="#e3e8dc"/>
-<g filter="url(#s)" stroke-linejoin="round" stroke-linecap="round"><rect x="94" y="96" width="112" height="20" rx="3" fill="#7d8763" stroke="#636c4c" stroke-width="2"/><path d="M94,116 L206,116 L218,292 L158,292 L150,198 L142,292 L82,292 Z" fill="#8f9a74" stroke="#636c4c" stroke-width="2"/><path d="M94,128 Q118,128 122,154 M206,128 Q182,128 178,154" fill="none" stroke="#636c4c" stroke-width="2"/><path d="M84,278 L140,278 M160,278 L216,278" stroke="#636c4c" stroke-width="1.5" stroke-dasharray="3 4"/><rect x="110" y="93" width="6" height="26" rx="2" fill="#7d8763" stroke="#636c4c" stroke-width="1.5"/><rect x="147" y="93" width="6" height="26" rx="2" fill="#7d8763" stroke="#636c4c" stroke-width="1.5"/><rect x="184" y="93" width="6" height="26" rx="2" fill="#7d8763" stroke="#636c4c" stroke-width="1.5"/><circle cx="150" cy="106" r="3.5" fill="#d9d2b8"/></g>
-</svg>

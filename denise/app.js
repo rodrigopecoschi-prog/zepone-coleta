@@ -66,6 +66,20 @@ function imagem(p, classe) {
   return `<div class="${classe} sem-foto" style="--cor:${escapar(p.cor || "#ddd")}"><span>${escapar(p.nome[0])}</span></div>`;
 }
 
+const VISTAS = ["Frente", "Costas", "Lado"];
+const nomeVista = (i) => VISTAS[i] || `Foto ${i + 1}`;
+
+function galeria(p) {
+  if (!p.fotos || !p.fotos.length) return imagem(p, "foto");
+  const fotos = p.fotos
+    .map((f, i) => `<img class="foto" src="${escapar(f)}" alt="${escapar(p.nome)} — ${nomeVista(i)}">`)
+    .join("");
+  const botoes = p.fotos.length < 2 ? "" : `<div class="vistas">${p.fotos
+    .map((f, i) => `<button data-i="${i}" aria-pressed="${i === 0}"><img src="${escapar(f)}" alt=""><span>${nomeVista(i)}</span></button>`)
+    .join("")}</div>`;
+  return `<div class="galeria">${fotos}</div>${botoes}`;
+}
+
 function preco(p) {
   return p.promo
     ? `<s>${brl(p.preco)}</s><span class="promo">${brl(p.promo)}</span>`
@@ -98,6 +112,7 @@ function montarVitrine() {
       <button class="card" data-id="${escapar(p.id)}">
         <div class="card-img">
           ${imagem(p, "foto")}
+          ${p.fotos && p.fotos[1] ? `<img class="foto foto-2" src="${escapar(p.fotos[1])}" alt="" loading="lazy">` : ""}
           ${p.novo ? '<span class="selo">Novo</span>' : ""}
           ${p.promo && !p.novo ? '<span class="selo selo-promo">Promo</span>' : ""}
         </div>
@@ -125,19 +140,16 @@ $("filtros").onclick = (e) => {
 };
 $("grade").onclick = (e) => {
   const c = e.target.closest(".card");
-  if (c) abrir(porId(c.dataset.id));
+  if (c) location.hash = `peca-${c.dataset.id}`;
 };
 
 // ---------- Detalhe da peça ----------
 
 function abrir(p) {
   let tamanho = p.tamanhos.length === 1 ? p.tamanhos[0] : "";
-  const fotos = p.fotos && p.fotos.length > 1
-    ? `<div class="miniaturas">${p.fotos.map((f) => `<img src="${escapar(f)}" alt="">`).join("")}</div>`
-    : "";
   const det = $("detalhe-corpo");
   det.innerHTML = `
-    <div class="detalhe-img">${imagem(p, "foto")}${fotos}</div>
+    <div class="detalhe-img">${galeria(p)}</div>
     <div class="detalhe-info">
       <span class="detalhe-cat">${escapar(nomeDep(p.departamento))} · ${escapar(p.categoria)}</span>
       <h3>${escapar(p.nome)}</h3>
@@ -179,11 +191,82 @@ function abrir(p) {
     $("detalhe").close();
     avisar(`${p.nome} (${tamanho}) foi para a sacola`);
   };
-  const mini = det.querySelector(".miniaturas");
-  if (mini) mini.onclick = (e) => {
-    if (e.target.tagName === "IMG") det.querySelector(".detalhe-img .foto").src = e.target.src;
+  const gal = det.querySelector(".galeria");
+  const vistas = det.querySelector(".vistas");
+  if (gal && vistas) {
+    vistas.onclick = (e) => {
+      const b = e.target.closest("button");
+      if (b) gal.scrollTo({ left: gal.clientWidth * b.dataset.i, behavior: "smooth" });
+    };
+    gal.onscroll = () => {
+      const i = Math.round(gal.scrollLeft / gal.clientWidth);
+      vistas.querySelectorAll("button").forEach((b, n) => b.setAttribute("aria-pressed", n === i));
+    };
+  }
+  if (!$("detalhe").open) $("detalhe").showModal();
+}
+
+// ---------- Endereço próprio de cada peça (#peca-f01) ----------
+
+function lerEndereco() {
+  const m = location.hash.match(/^#peca-([\w-]+)$/);
+  const p = m && porId(m[1]);
+  if (p) abrir(p);
+  else if ($("detalhe").open) $("detalhe").close();
+}
+window.addEventListener("hashchange", lerEndereco);
+$("detalhe").addEventListener("close", () => {
+  if (!location.hash.startsWith("#peca-")) return;
+  try { history.replaceState(null, "", location.pathname + location.search); }
+  catch { location.hash = ""; }
+});
+
+// ---------- Carrossel de destaques ----------
+
+function montarCarrossel() {
+  const lista = PRODUTOS.filter((p) => p.destaque);
+  if (!lista.length) return;
+  $("carrossel").hidden = false;
+  $("trilho").innerHTML = lista
+    .map((p) => `
+      <a class="slide" href="#peca-${escapar(p.id)}" style="--cor:${escapar(p.cor || "#eee")}">
+        <div class="slide-img">${imagem(p, "foto")}</div>
+        <div class="slide-info">
+          <span class="slide-dep">${escapar(nomeDep(p.departamento))}${p.novo ? " · Novidade" : p.promo ? " · Promoção" : ""}</span>
+          <strong class="slide-nome">${escapar(p.nome)}</strong>
+          <span class="slide-preco">${preco(p)}</span>
+          <span class="slide-ver">Ver peça →</span>
+        </div>
+      </a>`)
+    .join("");
+  $("pontos").innerHTML = lista
+    .map((_, i) => `<button data-i="${i}" aria-label="Destaque ${i + 1}"></button>`)
+    .join("");
+
+  const trilho = $("trilho");
+  const atual = () => Math.round(trilho.scrollLeft / trilho.clientWidth);
+  const ir = (i) => trilho.scrollTo({ left: trilho.clientWidth * ((i + lista.length) % lista.length), behavior: "smooth" });
+  const marcar = () => $("pontos").querySelectorAll("button")
+    .forEach((b, n) => b.setAttribute("aria-current", n === atual()));
+  trilho.addEventListener("scroll", marcar, { passive: true });
+  marcar();
+  $("seta-ant").onclick = () => ir(atual() - 1);
+  $("seta-prox").onclick = () => ir(atual() + 1);
+  $("pontos").onclick = (e) => {
+    const b = e.target.closest("button");
+    if (b) ir(Number(b.dataset.i));
   };
-  $("detalhe").showModal();
+
+  // Avança sozinho a cada 5 s e pausa enquanto a pessoa mexe nele
+  let pausado = false;
+  const c = $("carrossel");
+  ["mouseenter", "touchstart", "focusin"].forEach((ev) => c.addEventListener(ev, () => (pausado = true), { passive: true }));
+  ["mouseleave", "touchend", "focusout"].forEach((ev) => c.addEventListener(ev, () => (pausado = false), { passive: true }));
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    setInterval(() => {
+      if (!pausado && !document.hidden && !$("detalhe").open) ir(atual() + 1);
+    }, 5000);
+  }
 }
 
 // ---------- Sacola ----------
@@ -281,5 +364,7 @@ document.querySelectorAll("dialog").forEach((d) => {
 });
 
 preencherLoja();
+montarCarrossel();
 montarVitrine();
 salvar();
+lerEndereco();

@@ -26,23 +26,25 @@ const DEPARTAMENTOS = [
 
 // Cada peça: id único, departamento ("feminino" ou "infantil"), nome,
 // categoria, preço, tamanhos e fotos.
-// "fotos": caminhos de imagens na pasta img/ (ex.: ["img/vestido-1.jpg"]).
-// Sem foto, o site mostra um fundo na "cor" indicada.
-// Opcionais: promo (preço promocional), novo: true, descricao.
+// "fotos": imagens na pasta img/, nesta ordem: frente, costas, lado
+//   (ex.: ["img/vestido-frente.jpg", "img/vestido-costas.jpg", "img/vestido-lado.jpg"]).
+//   Pode ter só uma, ou mais de três. Sem foto, o site mostra a "cor".
+// Opcionais: promo (preço promocional), novo: true, descricao,
+//   destaque: true (aparece no carrossel da página inicial).
 const PRODUTOS = [
   // ---------- Feminino ----------
-  { id: "f01", departamento: "feminino", nome: "Vestido Midi Floral", categoria: "Vestidos", preco: 189.9, tamanhos: ["P", "M", "G"], cor: "#f3dcd3", fotos: ["img/f01.svg"], novo: true },
-  { id: "f02", departamento: "feminino", nome: "Vestido Longo Linho", categoria: "Vestidos", preco: 249.9, tamanhos: ["P", "M", "G", "GG"], cor: "#ece4d8", fotos: ["img/f02.svg"] },
-  { id: "f03", departamento: "feminino", nome: "Blusa Ombro a Ombro", categoria: "Blusas", preco: 89.9, tamanhos: ["P", "M", "G"], cor: "#f7e8e1", fotos: ["img/f03.svg"], novo: true },
-  { id: "f04", departamento: "feminino", nome: "Camisa de Seda Off-White", categoria: "Blusas", preco: 159.9, tamanhos: ["P", "M", "G"], cor: "#f2eee8", fotos: ["img/f04.svg"] },
-  { id: "f05", departamento: "feminino", nome: "Calça Pantalona Alfaiataria", categoria: "Calças", preco: 199.9, tamanhos: ["36", "38", "40", "42", "44"], cor: "#e2dbd3", fotos: ["img/f05.svg"] },
-  { id: "f06", departamento: "feminino", nome: "Saia Midi Plissada", categoria: "Saias", preco: 139.9, tamanhos: ["P", "M", "G"], cor: "#eed9dd", fotos: ["img/f06.svg"], promo: 119.9 },
+  { id: "f01", departamento: "feminino", nome: "Vestido Midi Floral", categoria: "Vestidos", preco: 189.9, tamanhos: ["P", "M", "G"], cor: "#f3dcd3", fotos: ["img/f01-frente.svg", "img/f01-costas.svg", "img/f01-lado.svg"], novo: true, destaque: true },
+  { id: "f02", departamento: "feminino", nome: "Vestido Longo Linho", categoria: "Vestidos", preco: 249.9, tamanhos: ["P", "M", "G", "GG"], cor: "#ece4d8", fotos: ["img/f02-frente.svg", "img/f02-costas.svg", "img/f02-lado.svg"] },
+  { id: "f03", departamento: "feminino", nome: "Blusa Ombro a Ombro", categoria: "Blusas", preco: 89.9, tamanhos: ["P", "M", "G"], cor: "#f7e8e1", fotos: ["img/f03-frente.svg", "img/f03-costas.svg", "img/f03-lado.svg"], novo: true },
+  { id: "f04", departamento: "feminino", nome: "Camisa de Seda Off-White", categoria: "Blusas", preco: 159.9, tamanhos: ["P", "M", "G"], cor: "#f2eee8", fotos: ["img/f04-frente.svg", "img/f04-costas.svg", "img/f04-lado.svg"], destaque: true },
+  { id: "f05", departamento: "feminino", nome: "Calça Pantalona Alfaiataria", categoria: "Calças", preco: 199.9, tamanhos: ["36", "38", "40", "42", "44"], cor: "#e2dbd3", fotos: ["img/f05-frente.svg", "img/f05-costas.svg", "img/f05-lado.svg"] },
+  { id: "f06", departamento: "feminino", nome: "Saia Midi Plissada", categoria: "Saias", preco: 139.9, tamanhos: ["P", "M", "G"], cor: "#eed9dd", fotos: ["img/f06-frente.svg", "img/f06-costas.svg", "img/f06-lado.svg"], promo: 119.9, destaque: true },
 
   // ---------- Infantil ----------
-  { id: "i01", departamento: "infantil", nome: "Body Bebê Algodão", categoria: "Bebê", preco: 49.9, tamanhos: ["RN", "P", "M", "G"], cor: "#fbf1cf", fotos: ["img/i01.svg"], novo: true },
-  { id: "i02", departamento: "infantil", nome: "Macacão Plush Ursinho", categoria: "Bebê", preco: 89.9, tamanhos: ["P", "M", "G"], cor: "#efe5d6", fotos: ["img/i02.svg"] },
-  { id: "i03", departamento: "infantil", nome: "Vestido Infantil Poá", categoria: "Menina", preco: 99.9, tamanhos: ["2", "4", "6", "8", "10"], cor: "#fadde3", fotos: ["img/i03.svg"], novo: true },
-  { id: "i04", departamento: "infantil", nome: "Conjunto Short e Blusa", categoria: "Menina", preco: 79.9, tamanhos: ["2", "4", "6", "8"], cor: "#e2f0de", fotos: ["img/i04.svg"], promo: 64.9 },
-  { id: "i05", departamento: "infantil", nome: "Camiseta Estampada Dino", categoria: "Menino", preco: 49.9, tamanhos: ["2", "4", "6", "8", "10", "12"], cor: "#dde9f0", fotos: ["img/i05.svg"] },
-  { id: "i06", departamento: "infantil", nome: "Bermuda Sarja", categoria: "Menino", preco: 69.9, tamanhos: ["4", "6", "8", "10", "12"], cor: "#e3e8dc", fotos: ["img/i06.svg"] },
+  { id: "i01", departamento: "infantil", nome: "Body Bebê Algodão", categoria: "Bebê", preco: 49.9, tamanhos: ["RN", "P", "M", "G"], cor: "#fbf1cf", fotos: ["img/i01-frente.svg", "img/i01-costas.svg", "img/i01-lado.svg"], novo: true },
+  { id: "i02", departamento: "infantil", nome: "Macacão Plush Ursinho", categoria: "Bebê", preco: 89.9, tamanhos: ["P", "M", "G"], cor: "#efe5d6", fotos: ["img/i02-frente.svg", "img/i02-costas.svg", "img/i02-lado.svg"], destaque: true },
+  { id: "i03", departamento: "infantil", nome: "Vestido Infantil Poá", categoria: "Menina", preco: 99.9, tamanhos: ["2", "4", "6", "8", "10"], cor: "#fadde3", fotos: ["img/i03-frente.svg", "img/i03-costas.svg", "img/i03-lado.svg"], novo: true, destaque: true },
+  { id: "i04", departamento: "infantil", nome: "Conjunto Short e Blusa", categoria: "Menina", preco: 79.9, tamanhos: ["2", "4", "6", "8"], cor: "#e2f0de", fotos: ["img/i04-frente.svg", "img/i04-costas.svg", "img/i04-lado.svg"], promo: 64.9 },
+  { id: "i05", departamento: "infantil", nome: "Camiseta Estampada Dino", categoria: "Menino", preco: 49.9, tamanhos: ["2", "4", "6", "8", "10", "12"], cor: "#dde9f0", fotos: ["img/i05-frente.svg", "img/i05-costas.svg", "img/i05-lado.svg"] },
+  { id: "i06", departamento: "infantil", nome: "Bermuda Sarja", categoria: "Menino", preco: 69.9, tamanhos: ["4", "6", "8", "10", "12"], cor: "#e3e8dc", fotos: ["img/i06-frente.svg", "img/i06-costas.svg", "img/i06-lado.svg"] },
 ];
