@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="900" height="1200">
+<defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity=".12"/></filter><pattern id="poa" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#ee8fa3"/><circle cx="4" cy="4" r="2.4" fill="#fff"/><circle cx="12" cy="12" r="2.4" fill="#fff"/></pattern></defs>
+<rect width="300" height="400" fill="#fadde3"/>
+<g filter="url(#s)" stroke-linejoin="round" stroke-linecap="round"><circle cx="118" cy="112" r="20" fill="url(#poa)" stroke="#d26f86" stroke-width="2"/><circle cx="182" cy="112" r="20" fill="url(#poa)" stroke="#d26f86" stroke-width="2"/><path d="M124,98 L176,98 L173,165 L127,165 Z" fill="url(#poa)" stroke="#d26f86" stroke-width="2"/><path d="M127,165 L173,165 L222,298 Q150,312 78,298 Z" fill="url(#poa)" stroke="#d26f86" stroke-width="2"/><path d="M132,98 Q141,116 150,100 Q159,116 168,98" fill="#fff" stroke="#d26f86" stroke-width="2"/><rect x="125" y="160" width="50" height="9" rx="3" fill="#fff" stroke="#d26f86" stroke-width="1.5"/></g>
+</svg>
